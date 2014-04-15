@@ -29,7 +29,8 @@ class ConvertItunesLink():
         """
         self.itunes_url = args['ITUNES_URL']
         self.verbose = args['verbose']
-        self.user_agent = 'iTunes/10.1 (Windows; U; Microsoft Windows XP Home Edition Service Pack 2 (Build 2600)) DPI/96'  # Pretend we're iTunes.
+        self.user_agent = 'iTunes/10.1 (Windows; U; Microsoft Windows XP Home Edition ' \
+                          'Service Pack 2 (Build 2600)) DPI/96'  # Pretend we're iTunes.
         self.opener = ''
         self.feed_name = None
         #===========
@@ -37,8 +38,6 @@ class ConvertItunesLink():
         self.url = self.check_protocol_in_url(self.itunes_url)  # first check if correct protocol in url
         self.podcast_id = self.get_podcast_id(self.url)  # strip podcast id from url
         self.output_feed_url = self.get_feed_url
-        #=============FINAL OUTPUT
-        #print self.print_output_feed_url
 
     @property
     def get_feed_url(self):
