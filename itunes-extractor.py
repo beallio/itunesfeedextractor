@@ -38,7 +38,7 @@ class ConvertItunesLink():
         # check if user already submitted a semi-parsed itunes URL
         # which can happen occasionally if googling for an artist, google will take people
         # to the second part of the URL we're looking for.
-        if new_url[0:5] == 'http':
+        if new_url[0:4] == 'http':
             self.dlog(u'iTunes URL: {0}'.format(new_url))
             soup = self.convert_url(new_url)
         else:
@@ -58,7 +58,8 @@ class ConvertItunesLink():
             try:
                 self.feed_name = button['podcast-name']
                 output = button['feed-url']
-                break
+                if output is not None:
+                    break
             except NameError and KeyError:
                 continue
         if output is None:
