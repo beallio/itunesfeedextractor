@@ -35,22 +35,26 @@ class ConvertItunesLink():
         # url to convert
         soup = self.convert_url(itunes_url)
         new_url = ''.join(soup.find_all(text=re.compile('itunes')))  # second url
-        self.dlog(u'iTunes URL: {0}'.format(new_url))
-        soup = self.convert_url(new_url)
+        # check if user already submitted a semi-parsed itunes URL
+        # which can happen occassionally if googling for an artist, google will take people
+        # to the second part of the URL we're looking for.
+        if new_url[0:5] == 'http':
+            self.dlog(u'iTunes URL: {0}'.format(new_url))
+            soup = self.convert_url(new_url)
+        else:
+            soup = self.convert_url(itunes_url)
         final_feed_url = self.extract_feed_url(soup)
         self.dlog('Feed found for {0}: {1}'.format(self.feed_name, final_feed_url))
+        final_feed_url = itunes_url
         return final_feed_url
-
-    def __repr__(self):
-        print u'{0}'.format(self.output_feed_url)
 
     def __str__(self):
         return u'{0}'.format(self.output_feed_url)
 
     def extract_feed_url(self, soup):
         buttons = soup.find_all('button')
+        output = None
         for button in buttons:
-            output = None
             try:
                 self.feed_name = button['podcast-name']
                 output = button['feed-url']
@@ -58,7 +62,8 @@ class ConvertItunesLink():
             except NameError and KeyError:
                 continue
         if output is None:
-            print 'Feed not found for {0}'.format(self.feed_name)
+            print 'Feed not found.'.format(self.feed_name)
+            #self.dlog('{0}'.format(soup.find_all(text=re.compile('customerMessage</key>')))
             sys.exit()
         return output
 
@@ -123,7 +128,7 @@ class ConvertItunesLink():
 
     def dlog(self, output):
         if self.verbose:
-            print '{0}'.format(output)
+            print u'{0}'.format(output)
 
 #====================================================================
 if __name__ == "__main__":
