@@ -29,7 +29,6 @@ class ConvertItunesLink():
         """
         self.itunes_url = args['ITUNES_URL']
         self.verbose = args['verbose']
-        self.converted_itunes_url = ''
         self.user_agent = 'iTunes/10.1 (Windows; U; Microsoft Windows XP Home Edition Service Pack 2 (Build 2600)) DPI/96'  # Pretend we're iTunes.
         self.opener = ''
         self.feed_name = None
@@ -103,10 +102,6 @@ class ConvertItunesLink():
                   Try searching for: {0}\n'''.format(title)
             sys.exit()
         pass
-
-    def converted_itunes_link(self):
-        # return output url for podcast
-        return self.converted_itunes_url
 
     def check_protocol_in_url(self, url):
         protocols = ['itms', 'feed', 'itpc']  # array of invalid protocols to check against
