@@ -3,10 +3,20 @@ iTunes Podcast URL Extractor
 
 Original code & inspiration from `http://itunes.so-nik.com`
 
-php SOURCE: `http://snipplr.com/view/52465`
+php source: `http://snipplr.com/view/52465`
 
 * Ex: `http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/viewPodcast?id=269238657`
 * Ex: `http://itunes.apple.com/us/podcast/hombre-potato/id319810190?uo=4`
+* Ex: `https://itunes.apple.com/us/podcast/hardwell-on-air-official-podcast/id559788668?mt=2`
+
+Usage and installation
+====================
+
+To install:
+
+    cd /path/to/code
+    git clone https://github.com/beallio/itunesfeedextractor.git
+    pip install -r /path/to/code/requirements.txt
 
 Usage:
 

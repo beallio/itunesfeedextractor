@@ -20,6 +20,7 @@ class ConvertItunesLink():
         self.opener = ''
         self.feed_name = None
         #===========
+        self.dlog('\nArguments: {0}\n'.format(args))
         print 'Finding feed for url: {0}'.format(self.itunes_url)
         self.url = self.check_protocol_in_url(self.itunes_url)  # first check if correct protocol in url
         self.podcast_id = self.get_podcast_id(self.url)  # strip podcast id from url
@@ -28,30 +29,32 @@ class ConvertItunesLink():
     @property
     def get_feed_url(self):
         base_url = 'http://itunes.apple.com/podcast/id'
-        itunes_url = base_url + self.podcast_id
+        converted_url = base_url + self.podcast_id
         self.opener = urllib2.build_opener()
         self.opener.addheaders = [('User-agent', self.user_agent)]
         # convert first url, will allow us to parse returned content for second
         # url to convert
-        soup = self.convert_url(itunes_url)
+        soup = self.convert_url(converted_url)
         new_url = ''.join(soup.find_all(text=re.compile('itunes')))  # second url
         # check if user already submitted a semi-parsed itunes URL
         # which can happen occasionally if googling for an artist, google will take people
         # to the second part of the URL we're looking for.
         if new_url[0:4] == 'http':
-            self.dlog(u'iTunes URL: {0}'.format(new_url))
+            self.dlog('Using converted iTunes URL: {0}'.format(new_url))
+            used_url = new_url
             soup = self.convert_url(new_url)
         else:
-            soup = self.convert_url(itunes_url)
-        final_feed_url = self.extract_feed_url(soup)
+            self.dlog('Using base URL and ID: {0}'.format(converted_url))
+            used_url = converted_url
+            soup = self.convert_url(converted_url)
+        final_feed_url = self.extract_feed_url(soup, used_url)
         self.dlog('Feed found for {0}: {1}'.format(self.feed_name, final_feed_url))
-        final_feed_url = itunes_url
         return final_feed_url
 
     def __str__(self):
         return u'{0}'.format(self.output_feed_url)
 
-    def extract_feed_url(self, soup):
+    def extract_feed_url(self, soup, url):
         buttons = soup.find_all('button')
         output = None
         for button in buttons:
@@ -63,8 +66,10 @@ class ConvertItunesLink():
             except NameError and KeyError:
                 continue
         if output is None:
-            print 'Feed not found.'.format(self.feed_name)
-            #self.dlog('{0}'.format(soup.find_all(text=re.compile('customerMessage</key>')))
+            itunes_u_check = self.check_if_itunes_u(url, self.feed_name)
+            if not itunes_u_check:
+                print 'Feed not found.'.format(self.feed_name)
+                #self.dlog('{0}'.format(soup.find_all(text=re.compile('customerMessage</key>')))
             sys.exit()
         return output
 
@@ -77,22 +82,33 @@ class ConvertItunesLink():
         else:
             return BeautifulSoup(content)
 
-    def check_if_itunes_u(self, url, title):
+    def check_if_itunes_u(self, url, feed_name=None):
         """
         Since iTunes-U uses the same identifier symbols,
         this is where we rule them out until it is supported
         Note: more checking for itunes-u content is done farther below
         Example URL: http://itunes.apple.com/itunes-u/the-civil-war-reconstruction/id341650730
+
+        Return True if itunes-U URL; False otherwise
+        :rtype : boolean
         """
-        itunes_u = 'itunes-u'
-        if itunes_u in url:
-            print '''iTunes-U links not supported.\n
-                  Currently Apple does not offer a way to subscribe to iTunes-U material outside of iTunes.\n
-                  A temporary solution is to search for a similar title as the podcast in hopes that the content\n
-                  providers also posted it to the iTunes Podcast Directory (unlikely for password protected content).\n
-                  Try searching for: {0}\n'''.format(title)
-            sys.exit()
-        pass
+        itunes_u_designator = ['itunes-u',
+                                'itunesu']
+        # loop through itunes-u URL designators in the converted URL and user argument URL
+        check = [itm for itm in itunes_u_designator if itm in url or itm in self.itunes_url]
+        if len(check) > 0:
+        # itunes URL dedicated, show warning to user, and return TRUE
+            print '''\n
+                Warning: iTunes-U links not supported.\n
+                Currently Apple does not offer a way to subscribe to iTunes-U material outside of iTunes. \n
+                A temporary solution is to search for a similar title as the podcast in hopes that the content \n
+                providers also posted it to the iTunes Podcast Directory (unlikely for password protected content). \n
+                '''
+            if feed_name is not None:
+                print 'Try searching for: {0}'.format(feed_name)
+            return True
+        # itunes u not found, return FALSE
+        return False
 
     def check_protocol_in_url(self, url):
         protocols = ['itms', 'feed', 'itpc']  # array of invalid protocols to check against
