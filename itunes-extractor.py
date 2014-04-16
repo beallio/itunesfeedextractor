@@ -26,6 +26,9 @@ class ConvertItunesLink():
         self.podcast_id = self.get_podcast_id(self.url)  # strip podcast id from url
         self.output_feed_url = self.get_feed_url
 
+    def __str__(self):
+        return u'{0}'.format(self.output_feed_url)
+
     @property
     def get_feed_url(self):
         base_url = 'http://itunes.apple.com/podcast/id'
@@ -42,17 +45,13 @@ class ConvertItunesLink():
         if new_url[0:4] == 'http':
             self.dlog('Using converted iTunes URL: {0}'.format(new_url))
             used_url = new_url
-            soup = self.convert_url(new_url)
+            soup = self.convert_url(used_url)
         else:
             self.dlog('Using base URL and ID: {0}'.format(converted_url))
             used_url = converted_url
-            soup = self.convert_url(converted_url)
         final_feed_url = self.extract_feed_url(soup, used_url)
         self.dlog(u'Feed found for {0}: {1}'.format(self.feed_name, final_feed_url))
         return final_feed_url
-
-    def __str__(self):
-        return u'{0}'.format(self.output_feed_url)
 
     def extract_feed_url(self, soup, url):
         buttons = soup.find_all('button')
@@ -104,12 +103,13 @@ class ConvertItunesLink():
         # itunes URL dedicated, show warning to user, and return TRUE
             print '''\n
                 Warning: iTunes-U links not supported.\n
-                Currently Apple does not offer a way to subscribe to iTunes-U material outside of iTunes. \n
-                A temporary solution is to search for a similar title as the podcast in hopes that the content \n
-                providers also posted it to the iTunes Podcast Directory (unlikely for password protected content). \n
-                '''
+                Currently Apple does not offer a way to subscribe to iTunes-U material outside of iTunes.
+                A temporary solution is to search for a similar title as the podcast in hopes that the content
+                providers also posted it to the iTunes Podcast Directory (unlikely for password protected content).'''
             if feed_name is not None:
-                print u'Try searching for: {0}'.format(feed_name)
+                print u'''
+                Try searching for: {0}
+                '''.format(feed_name)
             return True
         # itunes u not found, return FALSE
         return False
