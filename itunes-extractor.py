@@ -127,17 +127,14 @@ class ConvertItunesLink():
                 url = url.replace(protocol, 'http')
         return url
 
-    def get_podcast_id(self, url):
-        # strip podcast id from url for later use
+    def get_podcast_id(self, url):  # strip podcast id from url for later use
         id_styles = ['?id=', '&id=', '/id']  # indicates location of podcast id in URL
         id_separator = [x for x in id_styles if x in url]
         self.dlog('Podcast ID separator(s): {0}'.format(id_separator))
-        if len(id_separator) == 0:
-            # no podcast id found / exit
+        if len(id_separator) == 0:  # no podcast id found / exit
             print 'iTunes podcast id not found in url: {0}'.format(url)
             sys.exit()
-        elif len(id_separator) > 1:
-            # multiple podcast ids found / exit
+        elif len(id_separator) > 1:  # multiple podcast ids found / exit
             print 'Multiple iTunes podcast ids found in url: {0}\nExiting.'.format(url)
             sys.exit()
         else:
