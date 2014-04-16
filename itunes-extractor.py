@@ -48,7 +48,7 @@ class ConvertItunesLink():
             used_url = converted_url
             soup = self.convert_url(converted_url)
         final_feed_url = self.extract_feed_url(soup, used_url)
-        self.dlog('Feed found for {0}: {1}'.format(self.feed_name, final_feed_url))
+        self.dlog(u'Feed found for {0}: {1}'.format(self.feed_name, final_feed_url))
         return final_feed_url
 
     def __str__(self):
@@ -68,7 +68,11 @@ class ConvertItunesLink():
         if output is None:
             itunes_u_check = self.check_if_itunes_u(url, self.feed_name)
             if not itunes_u_check:
-                print 'Feed not found.'.format(self.feed_name)
+                if self.feed_name:
+                    self.dlog(u'Feed {0} not found.'.format(self.feed_name))
+                    print u'Feed not found.'.format(self.feed_name)
+                else:
+                    print 'Feed not found.'
                 #self.dlog('{0}'.format(soup.find_all(text=re.compile('customerMessage</key>')))
             sys.exit()
         return output
@@ -105,7 +109,7 @@ class ConvertItunesLink():
                 providers also posted it to the iTunes Podcast Directory (unlikely for password protected content). \n
                 '''
             if feed_name is not None:
-                print 'Try searching for: {0}'.format(feed_name)
+                print u'Try searching for: {0}'.format(feed_name)
             return True
         # itunes u not found, return FALSE
         return False
