@@ -10,8 +10,6 @@ import urllib2
 class ConvertItunesLink():
     def __init__(self, args):
         """
-
-        :rtype : string or something
         """
         self.itunes_url = args['ITUNES_URL']
         self.verbose = args['verbose']
@@ -20,11 +18,14 @@ class ConvertItunesLink():
         self.opener = ''
         self.feed_name = None
         #===========
-        self.dlog('\nArguments: {0}\n'.format(args))
-        print 'Finding feed for url: {0}'.format(self.itunes_url)
-        self.url = self.check_protocol_in_url(self.itunes_url)  # first check if correct protocol in url
-        self.podcast_id = self.get_podcast_id(self.url)  # strip podcast id from url
-        self.output_feed_url = self.get_feed_url
+        try:
+            self.dlog(u'\nArguments: {0}\n'.format(args))
+            self.dlog(u'Finding feed for url: {0}'.format(self.itunes_url))
+            self.url = self.check_protocol_in_url(self.itunes_url)  # first check if correct protocol in url
+            self.podcast_id = self.get_podcast_id(self.url)  # strip podcast id from url
+            self.output_feed_url = self.get_feed_url
+        except UrlError:
+            self.output_feed_url = None
 
     def __str__(self):
         return u'{0}'.format(self.output_feed_url)
@@ -68,20 +69,23 @@ class ConvertItunesLink():
             itunes_u_check = self.check_if_itunes_u(url, self.feed_name)
             if not itunes_u_check:
                 if self.feed_name:
-                    self.dlog(u'Feed {0} not found.'.format(self.feed_name))
-                    print u'Feed not found.'.format(self.feed_name)
+                    print u'Feed {0} not found.'.format(self.feed_name)
                 else:
                     print 'Feed not found.'
-                #self.dlog('{0}'.format(soup.find_all(text=re.compile('customerMessage</key>')))
-            sys.exit()
+                    #self.dlog('{0}'.format(soup.find_all(text=re.compile('customerMessage</key>')))
+            self.raise_url_error()
         return output
+
+    @property
+    def raise_url_error(self):
+        raise UrlError(u'Error locating feed for URL: {0}'.format(self.itunes_url))
 
     def convert_url(self, url):
         try:
             content = self.opener.open(url).read()
         except urllib2.HTTPError, e:
             print '{0} occurred.\nError connecting to iTunes.'.format(str(e))
-            sys.exit()
+            self.raise_url_error()
         else:
             return BeautifulSoup(content)
 
@@ -95,12 +99,11 @@ class ConvertItunesLink():
         Return True if itunes-U URL; False otherwise
         :rtype : boolean
         """
-        itunes_u_designator = ['itunes-u',
-                                'itunesu']
+        itunes_u_designator = ['itunes-u', 'itunesu']
         # loop through itunes-u URL designators in the converted URL and user argument URL
         check = [itm for itm in itunes_u_designator if itm in url or itm in self.itunes_url]
         if len(check) > 0:
-        # itunes URL dedicated, show warning to user, and return TRUE
+            # itunes URL dedicated, show warning to user, and return TRUE
             print '''\n
                 Warning: iTunes-U links not supported.\n
                 Currently Apple does not offer a way to subscribe to iTunes-U material outside of iTunes.
@@ -121,7 +124,8 @@ class ConvertItunesLink():
             if len(protocol) > 5:  # check if valid web protocol in url
                 self.dlog('Error! {0} not a recognized protocol'.format(protocol))
                 print '{0} does not appear to be a valid URL.  Exiting.'.format(url)
-                sys.exit()
+                self.raise_url_error()
+                return
             if protocol in protocols:  # if it's not 'http:' fix it.
                 self.dlog('Replacing URL protocol: {0}'.format(protocol))
                 url = url.replace(protocol, 'http')
@@ -133,10 +137,12 @@ class ConvertItunesLink():
         self.dlog('Podcast ID separator(s): {0}'.format(id_separator))
         if len(id_separator) == 0:  # no podcast id found / exit
             print 'iTunes podcast id not found in url: {0}'.format(url)
-            sys.exit()
+            self.raise_url_error()
+            return
         elif len(id_separator) > 1:  # multiple podcast ids found / exit
             print 'Multiple iTunes podcast ids found in url: {0}\nExiting.'.format(url)
-            sys.exit()
+            self.raise_url_error()
+            return
         else:
             podcast_id = url.split(id_separator[0])[1]
             self.dlog('Non-stripped Podcast ID: {0}'.format(podcast_id))
@@ -147,6 +153,10 @@ class ConvertItunesLink():
     def dlog(self, output):
         if self.verbose:
             print u'{0}'.format(output)
+
+
+class UrlError(Exception):
+    pass
 
 #====================================================================
 if __name__ == "__main__":
@@ -161,3 +171,4 @@ if __name__ == "__main__":
 else:
     sys.exit()
 
+# exit file
